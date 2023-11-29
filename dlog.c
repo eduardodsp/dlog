@@ -1,8 +1,5 @@
 #include "dlog.h"
 
-#define DLOG_TEST_WRITE 1
-#define DLOG_TEST_READ  1
-
 #define DLOG_LOG_BEGIN_OFFSET 4
 
 const unsigned char DLOG_OPT_DEFAULT_ON = DLOG_OPT_AUTO_CLR | DLOG_OPT_OVERWRITE;
@@ -229,10 +226,16 @@ int dlog_get(dlog_t* ptr, char* msg, int size)
 
 int dlog_put(dlog_t* ptr, char* msg)
 {
+
+    unsigned char full = 0;
+
     if( ptr == NULL )
         return DLOG_NULL_PTR;
 
-    if( !ptr->en_overwrite && (ptr->qcount >= ptr->qsize) )
+    if(ptr->qcount >= ptr->qsize)
+        full = 1;
+
+    if( !ptr->en_overwrite && full )
         return DLOG_FULL_QUEUE;
 
     int size = strlen(msg);
@@ -248,7 +251,7 @@ int dlog_put(dlog_t* ptr, char* msg)
     fputc(string_terminator, ptr->file_ptr);
 
     // if we overrun the head index we must update it to keep the FIFO behaviour
-    if ( ptr->qtail == ptr->qhead )
+    if ( ptr->qtail == ptr->qhead && (full))
     {
         ptr->qhead = (ptr->qhead + 1) % ptr->qsize;
         if( ptr->qhead )
@@ -303,50 +306,34 @@ int dlog_close(dlog_t* ptr)
     return DLOG_OK;
 }
 
-int dlog_test(dlog_t* ptr, unsigned int n, unsigned char updown)
+int dlog_write_test(dlog_t* ptr, unsigned int n)
 {
-#if DLOG_TEST_WRITE
     char msg[DLOG_LINE_MAX_SIZE] = "";
-#endif
 
     if( ptr == NULL )
         return DLOG_NULL_PTR;
 
-#if DLOG_TEST_READ
-    char readbuf[DLOG_LINE_MAX_SIZE+2] = "";
-    int ret = 0;
-#endif
-
-#if DLOG_TEST_WRITE
-    if(updown)
+    for(int i=1; i <= n; i++)
     {
-        for(int i=1; i <= n; i++)
-        {
-            snprintf(msg, sizeof(msg), "Sample message%d", i);
+        snprintf(msg, sizeof(msg), "Test message%d", i);
 
-            if ( !dlog_put(ptr, msg) ){
-                printf("dlog_put FAILED \n");
-                return 0;
-            }
+        if ( !dlog_put(ptr, msg) ){
+            printf("dlog_put FAILED \n");
+            return 0;
         }
     }
-    else
-    {
-        for(int i=1024; i >= 1024 - n; i--)
-        {
-            snprintf(msg, sizeof(msg), "Sample message%d", i);
 
-            if ( !dlog_put(ptr, msg) ){
-                printf("dlog_put FAILED \n");
-                return 0;
-            }
-        }
-    }
-#endif
+    return 1;
+}
 
-#if DLOG_TEST_READ
-    usleep(1000);
-    ret = dlog_get(ptr, readbuf, sizeof(readbuf));
+int dlog_read_test(dlog_t* ptr)
+{
+    char readbuf[DLOG_LINE_MAX_SIZE] = "";
+
+    if( ptr == NULL )
+        return DLOG_NULL_PTR;
+
+    int ret = dlog_get(ptr, readbuf, sizeof(readbuf));
     usleep(1000);
     while(ret)
     {
@@ -361,8 +348,6 @@ int dlog_test(dlog_t* ptr, unsigned int n, unsigned char updown)
 
         usleep(1000);
     }
-#endif 
 
     return 1;
-
 }

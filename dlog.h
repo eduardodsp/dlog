@@ -113,7 +113,9 @@ int dlog_put(dlog_t* ptr, char* msg);
  * @param n Number of automatic generated messages to write
  * @return DLOG_ERR_CODES
  */
-int dlog_test(dlog_t* ptr, unsigned int n, unsigned char updown);
+int dlog_write_test(dlog_t* ptr, unsigned int n);
+
+int dlog_read_test(dlog_t* ptr);
 
 /**
  * @brief Close the log file and reset control block

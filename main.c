@@ -5,13 +5,15 @@
 
 int main()
 { 
-    dlog_t log1;
+    dlog_t log;
     
-    if( dlog_open(&log1, "mylog", 20) != DLOG_OK )
+    if( dlog_open(&log, "mylog", 80) != DLOG_OK )
         printf("ringfile_init FAILED \n");
 
-    dlog_test(&log1, 30, 0);
-    dlog_close(&log1);
+    dlog_write_test(&log, 100);
+    dlog_read_test(&log);
+    
+    dlog_close(&log);
 
     return 0;
 }

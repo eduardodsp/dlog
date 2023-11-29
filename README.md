@@ -15,24 +15,31 @@ All APIs are documented in dlog.h
 ### Usage:
 ```
 
-    dlog_t log1;
-    char readbuf[DLOG_LINE_MAX_SIZE] = "";
-    char msg1[] = "Sample Info message1";
+    // first we create an instance of dlog_t
+    dlog_t log;
 
-    if( dlog_open(&log1, "mylog", 4) !=  DLOG_OK ) {
+    // then we initialize the instance and open the file
+    if( dlog_open(&log, "mylog", 4) !=  DLOG_OK ) {
         printf("dlog_open FAILED \n");
         return 0;
     }
 
-    //write a message into the file
-    if ( dlog_put(&log1, msg1) !=  DLOG_OK ){
-        printf("ringfile_put FAILED \n");
+    // optionally we can also set or clear some of the log options
+    if ( dlog_set_opt(&log, DLOG_OPT_OVERWRITE, 1) !=  DLOG_OK ){
+        printf("dlog_set_opt FAILED \n");
+        return 0;
+    }   
+
+    // now we can write a message into the file
+    if ( dlog_put(&log, "Sample Info message") !=  DLOG_OK ){
+        printf("dlog_put FAILED \n");
         return 0;
     }
 
-    //read the message
-    if ( dlog_get(&log1, readbuf, sizeof(readbuf)) == DLOG_OK )
-      printf("%s", readbuf);
-
+    // and read the message
+    char readbuf[DLOG_LINE_MAX_SIZE] = "";
+    if( dlog_get(&log, readbuf, sizeof(readbuf)) == DLOG_OK )
+        printf("%s\n", readbuf);
+    
 ```
 
