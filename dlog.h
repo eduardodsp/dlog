@@ -108,13 +108,18 @@ int dlog_get(dlog_t* ptr, char* msg, int size);
 int dlog_put(dlog_t* ptr, char* msg);
 
 /**
- * @brief Run a simple write and readback test
+ * @brief Write n messages to the log file
  * @param ptr Pointer to the log file control block
  * @param n Number of automatic generated messages to write
  * @return DLOG_ERR_CODES
  */
 int dlog_write_test(dlog_t* ptr, unsigned int n);
 
+/**
+ * @brief Reads and prints all unread messages in the log file 
+ * @param ptr Pointer to the log file control block
+ * @return DLOG_ERR_CODES
+ */
 int dlog_read_test(dlog_t* ptr);
 
 /**
