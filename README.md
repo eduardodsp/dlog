@@ -4,8 +4,11 @@ Stupid simple log file manager written entirely in ANSI C.
 
 Features:
     - Circular log with user defined size.
+
     - Overwrite old logs if file is full. This option can be disabled at runtime.
+
     - Save messages to a human readable file.
+    
     - Multiple instances.
 
 Warning: NOT THREAD SAFE!
