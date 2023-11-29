@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "ringfile.h": "c",
+        "stdatomic.h": "c",
+        "unistd.h": "c"
+    }
+}
