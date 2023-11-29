@@ -1,6 +1,11 @@
 #include "dlog.h"
 
-#define DLOG_LOG_BEGIN_OFFSET 5
+#define DLOG_SIZE_LINE  0
+#define DLOG_COUNT_LINE 1
+#define DLOG_TAIL_LINE  2
+#define DLOG_HEAD_LINE  3
+
+#define DLOG_LOG_BEGIN_LINE 5
 
 const unsigned char DLOG_OPT_DEFAULT_ON = DLOG_OPT_AUTO_CLR | DLOG_OPT_OVERWRITE;
 
@@ -12,7 +17,7 @@ static int open_log_file(dlog_t* ptr);
 static int create_log_file(dlog_t* ptr);
 static int read_header(dlog_t* ptr);
 static int update_header(dlog_t* ptr);
-static int seek_position(FILE* pfile, unsigned int index, fpos_t* pos);
+static int seek_position(FILE* pfile, unsigned int line, fpos_t* pos);
 
 int dlog_open(dlog_t* ptr, char* filename, unsigned int size)
 {
@@ -51,20 +56,20 @@ int dlog_open(dlog_t* ptr, char* filename, unsigned int size)
     fgetpos(ptr->file_ptr, &ptr->header_head_pos);
 
     //set header positions
-    seek_position(ptr->file_ptr, 0, &ptr->header_size_pos);
-    seek_position(ptr->file_ptr, 1, &ptr->header_count_pos);
-    seek_position(ptr->file_ptr, 2, &ptr->header_tail_pos);
-    seek_position(ptr->file_ptr, 3, &ptr->header_head_pos);
+    seek_position(ptr->file_ptr, DLOG_SIZE_LINE, &ptr->header_size_pos);
+    seek_position(ptr->file_ptr, DLOG_COUNT_LINE, &ptr->header_count_pos);
+    seek_position(ptr->file_ptr, DLOG_TAIL_LINE, &ptr->header_tail_pos);
+    seek_position(ptr->file_ptr, DLOG_HEAD_LINE, &ptr->header_head_pos);
 
     if( !read_header(ptr) )
         return DLOG_INTERNAL_ERR;
 
     //set the log begin position
-    seek_position(ptr->file_ptr, DLOG_LOG_BEGIN_OFFSET, &ptr->log_begin_pos);
+    seek_position(ptr->file_ptr, DLOG_LOG_BEGIN_LINE, &ptr->log_begin_pos);
 
     //set the tail and head position
-    seek_position(ptr->file_ptr, ptr->qtail + DLOG_LOG_BEGIN_OFFSET, &ptr->tail_pos);
-    seek_position(ptr->file_ptr, ptr->qhead + DLOG_LOG_BEGIN_OFFSET, &ptr->head_pos);
+    seek_position(ptr->file_ptr, ptr->qtail + DLOG_LOG_BEGIN_LINE, &ptr->tail_pos);
+    seek_position(ptr->file_ptr, ptr->qhead + DLOG_LOG_BEGIN_LINE, &ptr->head_pos);
 
 
     return DLOG_OK;
@@ -182,16 +187,16 @@ int create_log_file(dlog_t* ptr)
 }
 
 /**
- * @brief Find the file position according to the index. Each index represents
- * a message followed by a newline character, so we must loop through the file counting
+ * @brief Find the file position according to the line. Each line is a string
+ * followed by a newline character, so we must loop through the file counting
  * how many newline characters we find. This is very slow, so we should not overuse it.
 */
-int seek_position(FILE* pfile, unsigned int index, fpos_t* pos)
+int seek_position(FILE* pfile, unsigned int line, fpos_t* pos)
 {
     char c;
     rewind(pfile);
 
-    for(int i=0; i < index; i++) {
+    for(int i=0; i < line; i++) {
         while ((c = fgetc(pfile)) != '\n'){;}
     }
 
