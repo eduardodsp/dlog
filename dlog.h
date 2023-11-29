@@ -65,6 +65,7 @@ typedef struct _dlog_t{
     fpos_t header_tail_pos;     // internal use only!!!
     fpos_t header_head_pos;     // internal use only!!!
     fpos_t header_count_pos;    // internal use only!!!
+    fpos_t header_size_pos;     // internal use only!!!
     FILE*  file_ptr;            // internal use only!!!
 
     unsigned char en_auto_clr;  // internal use only!!!

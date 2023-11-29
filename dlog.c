@@ -1,6 +1,6 @@
 #include "dlog.h"
 
-#define DLOG_LOG_BEGIN_OFFSET 4
+#define DLOG_LOG_BEGIN_OFFSET 5
 
 const unsigned char DLOG_OPT_DEFAULT_ON = DLOG_OPT_AUTO_CLR | DLOG_OPT_OVERWRITE;
 
@@ -45,14 +45,16 @@ int dlog_open(dlog_t* ptr, char* filename, unsigned int size)
     //initialize all file positions to 0
     fgetpos(ptr->file_ptr, &ptr->tail_pos);
     fgetpos(ptr->file_ptr, &ptr->head_pos);
+    fgetpos(ptr->file_ptr, &ptr->header_size_pos);
     fgetpos(ptr->file_ptr, &ptr->header_count_pos);
     fgetpos(ptr->file_ptr, &ptr->header_tail_pos);
     fgetpos(ptr->file_ptr, &ptr->header_head_pos);
 
     //set header positions
-    seek_position(ptr->file_ptr, 0, &ptr->header_count_pos);
-    seek_position(ptr->file_ptr, 1, &ptr->header_tail_pos);
-    seek_position(ptr->file_ptr, 2, &ptr->header_head_pos);
+    seek_position(ptr->file_ptr, 0, &ptr->header_size_pos);
+    seek_position(ptr->file_ptr, 1, &ptr->header_count_pos);
+    seek_position(ptr->file_ptr, 2, &ptr->header_tail_pos);
+    seek_position(ptr->file_ptr, 3, &ptr->header_head_pos);
 
     if( !read_header(ptr) )
         return DLOG_INTERNAL_ERR;
@@ -82,6 +84,11 @@ int dlog_set_opt(dlog_t* ptr, unsigned char opt, unsigned char value)
 
 int read_header(dlog_t* ptr)
 {
+
+    fsetpos(ptr->file_ptr, &ptr->header_size_pos);
+	if (fscanf(ptr->file_ptr, "size: %010u\n", &ptr->qsize) < 0)
+		return 0;
+
     fsetpos(ptr->file_ptr, &ptr->header_count_pos);
 	if (fscanf(ptr->file_ptr, "count: %010u\n", &ptr->qcount) < 0)
 		return 0;
@@ -109,6 +116,10 @@ int read_header(dlog_t* ptr)
 int update_header(dlog_t* ptr)
 {
 	rewind(ptr->file_ptr);
+
+    fsetpos(ptr->file_ptr, &ptr->header_size_pos);
+	fprintf(ptr->file_ptr, "size: %010u\n", ptr->qsize);
+
     fsetpos(ptr->file_ptr, &ptr->header_count_pos);
 	fprintf(ptr->file_ptr, "count: %010u\n", ptr->qcount);
 
@@ -153,6 +164,7 @@ int create_log_file(dlog_t* ptr)
         return 0;
 
     // fill the header block
+	fprintf(ptr->file_ptr, "size: %010u\n", ptr->qsize);
 	fprintf(ptr->file_ptr, "count: %010u\n", ptr->qcount);
 	fprintf(ptr->file_ptr, "tail: %010u\n", ptr->qtail);
 	fprintf(ptr->file_ptr, "head: %010u\n", ptr->qhead);
@@ -211,7 +223,12 @@ int dlog_get(dlog_t* ptr, char* msg, int size)
 
     ptr->qhead = (ptr->qhead + 1) % ptr->qsize;
     fgetpos(ptr->file_ptr, &ptr->head_pos);
+
+    #ifdef _____fpos_t_defined
     ptr->head_pos.__pos += DLOG_LINE_MAX_SIZE - i;
+    #else
+    ptr->head_pos += DLOG_LINE_MAX_SIZE - i;
+    #endif
 
     if( ptr->qhead == 0) 
         ptr->head_pos = ptr->log_begin_pos;
@@ -256,7 +273,11 @@ int dlog_put(dlog_t* ptr, char* msg)
         ptr->qhead = (ptr->qhead + 1) % ptr->qsize;
         if( ptr->qhead )
         {
+            #ifdef _____fpos_t_defined
             ptr->head_pos.__pos = ptr->tail_pos.__pos + DLOG_LINE_MAX_SIZE + 1;
+            #else
+            ptr->head_pos = ptr->tail_pos + DLOG_LINE_MAX_SIZE + 1;
+            #endif
         }
         else
         {
@@ -271,7 +292,12 @@ int dlog_put(dlog_t* ptr, char* msg)
     // to whats left to complete a maximum line plus a newline
     // character
     fgetpos(ptr->file_ptr, &ptr->tail_pos);
-    ptr->tail_pos.__pos += DLOG_LINE_MAX_SIZE - size;//  + 1;
+
+    #ifdef _____fpos_t_defined
+    ptr->tail_pos.__pos += DLOG_LINE_MAX_SIZE - size;
+    #else
+    ptr->tail_pos += DLOG_LINE_MAX_SIZE - size;
+    #endif    
 
     if ( ptr->en_auto_clr )
     {

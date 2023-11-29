@@ -2,6 +2,11 @@
     "files.associations": {
         "ringfile.h": "c",
         "stdatomic.h": "c",
-        "unistd.h": "c"
+        "unistd.h": "c",
+        "__mbstate_t.h": "c",
+        "types.h": "c",
+        "stdio.h": "c",
+        "libc-header-start.h": "c",
+        "features.h": "c"
     }
 }
