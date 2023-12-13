@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 
 #define DLOG_NAME_MAX_SIZE 25
-#define DLOG_LINE_MAX_SIZE 140
+#define DLOG_LINE_MAX_SIZE 100
 
 /**
  * @brief Enable/Disable automatic clean up after writing a new line.
@@ -119,9 +119,10 @@ int dlog_write_test(dlog_t* ptr, unsigned int n);
 /**
  * @brief Reads and prints all unread messages in the log file 
  * @param ptr Pointer to the log file control block
+ * @param n Number of messages to read.
  * @return DLOG_ERR_CODES
  */
-int dlog_read_test(dlog_t* ptr);
+int dlog_read_test(dlog_t* ptr, unsigned int n);
 
 /**
  * @brief Close the log file and reset control block
