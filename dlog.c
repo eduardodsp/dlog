@@ -27,7 +27,7 @@ static void update_header(dlog_t* ptr);
 static void seek_position(FILE* pfile, unsigned int line, fpos_t* pos);
 static void fill_empty_entries(FILE* pfile, unsigned int start, unsigned int n);
 
-int dlog_open(dlog_t* ptr, char* filename, unsigned int size)
+int dlog_open(dlog_t* ptr, const char* filename, unsigned int size)
 {
     if(ptr == NULL)
         return DLOG_NULL_PTR;
@@ -274,7 +274,7 @@ int dlog_get(dlog_t* ptr, char* msg, int size)
     return DLOG_OK;
 }
 
-int dlog_put(dlog_t* ptr, char* msg)
+int dlog_put(dlog_t* ptr, const char* msg)
 {
     unsigned char full = 0;
 

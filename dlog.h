@@ -99,7 +99,7 @@ typedef struct _dlog_t{
  * @param size Max number of lines in the log file
  * @return DLOG_ERR_CODES
  */
-int dlog_open(dlog_t* ptr, char* filename, unsigned int size);
+int dlog_open(dlog_t* ptr, const char* filename, unsigned int size);
 
 /**
  * @brief Set option flagss
@@ -124,7 +124,7 @@ int dlog_get(dlog_t* ptr, char* msg, int size);
  * @param msg Message string
  * @return DLOG_ERR_CODES
  */
-int dlog_put(dlog_t* ptr, char* msg);
+int dlog_put(dlog_t* ptr, const char* msg);
 
 /**
  * @brief Write n messages to the log file
