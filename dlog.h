@@ -119,6 +119,21 @@ int dlog_set_opt(dlog_t* ptr, unsigned char opt, unsigned char value);
 int dlog_get(dlog_t* ptr, char* msg, int size);
 
 /**
+ * @brief Read a message from the log file without removing it from the file
+ * @param ptr Pointer to the log file control block
+ * @param msg Output buffer
+ * @param size Size of the message in bytes
+ * @return DLOG_ERR_CODES
+ */
+int dlog_peek(dlog_t* ptr, char* msg, int size);
+
+/**
+ * @brief Removes one message from the file.
+ * @param ptr Pointer to the log file control block
+ */
+int dlog_next(dlog_t* ptr);
+
+/**
  * @brief Put a message into the log file
  * @param ptr Pointer to the log file control block
  * @param msg Message string
