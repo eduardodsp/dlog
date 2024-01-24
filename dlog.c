@@ -274,6 +274,41 @@ int dlog_get(dlog_t* ptr, char* msg, int size)
     return DLOG_OK;
 }
 
+int dlog_peek(dlog_t* ptr, char* msg, int size)
+{
+    if(ptr == NULL)
+        return DLOG_NULL_PTR;
+
+    if(ptr->qcount == 0)
+        return DLOG_EMPTY_QUEUE;
+
+    //set file to head position
+    fsetpos(ptr->file_ptr , &ptr->head_pos);
+
+    for(int i = 0; i < size; i++)
+    {
+        int c = fgetc(ptr->file_ptr);
+        if( c == string_terminator ){
+            msg[i] = '\0';
+            break;
+        }
+        msg[i] = c;
+    }
+
+    return DLOG_OK;    
+}
+
+int dlog_next(dlog_t* ptr)
+{
+    ptr->qhead = (ptr->qhead + 1) % ptr->qsize;
+    UPDATE_QUEUE_POS(ptr->head_pos, ptr->qhead);
+
+    ptr->qcount--;
+
+    update_header(ptr);   
+    return DLOG_OK;
+}
+
 int dlog_put(dlog_t* ptr, const char* msg)
 {
     unsigned char full = 0;
